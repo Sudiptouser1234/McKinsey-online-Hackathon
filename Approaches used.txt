@@ -1,0 +1,22 @@
+Approchaes used for the hack:
+
+1.I have used R 3.4.3 for coding and model building.First,I have verified the data quality with EDA,outlier check,missing value and correlation analysis.
+
+2.For missining values,I have imputated numerical variables with their means.
+
+3.For categorical variables, I have used Label Encoding.Label encoding found to be more useful compared to one hot encoding for this data set.
+
+4.Gained some useful insights for the variables with the help of correlation analysis.
+
+5.Have done some basic feature engineering like rounding off the variable "Loan_Period" which helped to improve the score.
+
+6.For model building,I have used Xgboost algorithm.Here,I have built 2 xgb models.
+
+7.I have tuned the parameters of the xgb models to verify the scores.
+
+8.Finally,I have used weighted-average ensembling method to boost the score.
+
+9.My final submission is based on the weighted-average score of my 2 best xgboost models.
+
+10.Additionally,I have tried Neural networks for model building.But,NN was found to be not much helpful to improve the public lb scores.
+Hence,I have excluded the NN implementation part from my codes.
