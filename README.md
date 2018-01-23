@@ -1,5 +1,7 @@
 # McKinsey-online-Hackathon
-This respository is about Mckinsey online hack conducted on Analytics Vidhya on January 20th-21st,2018
+This respository is about Mckinsey online hack conducted on Analytics Vidhya on January 20th-21st,2018.
+
+
 
 
 
@@ -19,4 +21,11 @@ They now want to identify the leads' segments having a higher conversion ratio (
 **Evaluation Criteria**
 
 
-The Evaluation Criteria for this problem is AUC_ROC .
+The Evaluation Criteria for this problem is AUC_ROC.
+
+
+
+
+
+
+**Instructions**
