@@ -48,13 +48,5 @@ All the codes should work fine with R version 3.4.1 or 3.4.3.
 The following R packages/libraries are required to run the code file:
 
 
-library(stringr)
-library(dplyr)
-library(car)
-library(caret)
-library(GGally)
-library(ggplot2)
-library(cowplot)
-library(caret)
-library(Matrix)
-library(xgboost)
+stringr,dplyr,car,caret,GGally,ggplot2,cowplot,Matrix,xgboost
+
