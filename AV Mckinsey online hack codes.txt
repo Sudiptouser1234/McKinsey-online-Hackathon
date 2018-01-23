@@ -1,0 +1,261 @@
+#Loading libraries
+
+library(data.table)
+library(stringr)
+library(dplyr)
+library(car)
+library(caret)
+library(GGally)
+library(ggplot2)
+library(cowplot)
+library(caTools)
+library(MASS)
+library(StatMeasures)
+library(caret)
+library(Matrix)
+library(xgboost)
+
+
+#Loading data set
+train=fread("C:/Users/Sudipto Kumar/Desktop/HackerEarth/AV Mckinsey hack/train.csv")
+test=fread("C:/Users/Sudipto Kumar/Desktop/HackerEarth/AV Mckinsey hack/test.csv")
+
+#Checking duplicate values
+
+sum(duplicated(train))
+sum(duplicated(test))
+#No duplicate values found
+
+#Checking the data set
+summary(train)
+summary(test)
+
+#Checking for missing values
+sum(is.na(train))
+[1] 154641
+ sum(is.na(test))
+[1] 66239
+
+sapply(train,function(x) sum(is.na(x)))
+
+sapply(test,function(x) sum(is.na(x)))
+
+
+#Checking for imbalance data
+table(train$Approved)
+
+#The data set looks pretty imbalanced 
+
+
+*******************************************************************
+#Missing value treatment for numerical variables with mean
+
+train$Existing_EMI[is.na(train$Existing_EMI)]=mean(train$Existing_EMI,na.rm=T)
+
+train$Employer_Category2[is.na(train$Employer_Category2)]=mean(train$Employer_Category2,na.rm=T)
+train$Loan_Amount[is.na(train$Loan_Amount)]=mean(train$Loan_Amount,na.rm=T)
+
+train$Interest_Rate[is.na(train$Interest_Rate)]=mean(train$Interest_Rate,na.rm=T)
+train$Loan_Period[is.na(train$Loan_Period)]=mean(train$Loan_Period,na.rm=T)
+train$EMI[is.na(train$EMI)]=mean(train$EMI,na.rm=T)
+
+test$Existing_EMI[is.na(test$Existing_EMI)]=mean(test$Existing_EMI,na.rm=T)
+
+test$Employer_Category2[is.na(test$Employer_Category2)]=mean(test$Employer_Category2,na.rm=T)
+test$Loan_Amount[is.na(test$Loan_Amount)]=mean(test$Loan_Amount,na.rm=T)
+
+test$Interest_Rate[is.na(test$Interest_Rate)]=mean(test$Interest_Rate,na.rm=T)
+test$Loan_Period[is.na(test$Loan_Period)]=mean(test$Loan_Period,na.rm=T)
+test$EMI[is.na(test$EMI)]=mean(test$EMI,na.rm=T)
+
+
+*********************************************************************************
+
+#Combining the train,test set
+
+
+test$Approved=NA
+data<-rbind(train,test)
+
+*********************************************************************************
+
+#EDA:
+ggplot(data,aes(x=Approved,y=Loan_Amount))+geom_point()
+
+ggplot(data,aes(x=Existing_EMI,y=Loan_Amount))+geom_point()
+
+hist(data$EMI,data$Loan_Period,breaks=10)
+
+hist(data$Existing_EMI,data$Loan_Period,breaks=10)
+
+hist(data$Loan_Amount,data$Interest_Rate,breaks=10)
+
+hist(data$EMI,data$Interest_Rate,breaks=10)
+
+***********************************************************************************
+
+#Correlation analysis:
+
+ggpairs(data[, c("Existing_EMI", "Loan_Amount")])
+#less correlation
+
+
+ggpairs(data[, c("Loan_Amount", "Loan_Period")])
+
+#0.381
+
+ggpairs(data[, c("Interest_Rate", "EMI")])
+
+#-ve cor
+
+
+ggpairs(data[, c("City_Category", "Var1")])
+#less corr found
+
+ggpairs(data[, c("Contacted", "Loan_Amount")])
+#less corr
+ggpairs(data[, c("Contacted", "Approved")])
+
+#less corr found
+
+
+
+***********************************************************************************************
+
+Feature Engineering:
+
+#Excluding the ID variable
+data$ID=NULL
+
+#Label encoding categorical variables
+
+data[,Gender := as.integer(as.factor(Gender))-1]
+data[,DOB := as.integer(as.factor(DOB))-1]
+data[,Lead_Creation_Date := as.integer(as.factor(Lead_Creation_Date))-1]
+data[,City_Code := as.integer(as.factor(City_Code))-1]
+data[,City_Category := as.integer(as.factor(City_Category))-1]
+data[,Employer_Code := as.integer(as.factor(Employer_Code))-1]
+
+data[,Employer_Category1 := as.integer(as.factor(Employer_Category1))-1]
+data[,Primary_Bank_Type := as.integer(as.factor(Primary_Bank_Type))-1]
+
+data[,Contacted := as.integer(as.factor(Contacted))-1]
+data[,Source := as.integer(as.factor(Source))-1]
+data[,Source_Category := as.integer(as.factor(Source_Category))-1]
+data[,Customer_Existing_Primary_Bank_Code := as.integer(as.factor(Customer_Existing_Primary_Bank_Code))-1]
+
+
+#Rounding off numerical variable
+data$Loan_Period<-format(round(data$Loan_Period,0),nsmall=0)
+data$Loan_Period=as.numeric(data$Loan_Period)
+
+***************************************************************************************
+
+#Model building using xgboost
+
+#I have bulit 2 xgb models
+
+varnames <- setdiff(colnames(data), c("ID", "Approved"))
+
+
+#Creating sparase matrix
+train_sparse <- Matrix(as.matrix(data[!is.na(Approved), varnames, with=F]), sparse=TRUE)
+test_sparse <- Matrix(as.matrix(data[is.na(Approved), varnames, with=F]), sparse=TRUE)
+y_train <- data[!is.na(Approved),Approved]
+dtrain <- xgb.DMatrix(data=train_sparse, label=y_train)
+dtest <- xgb.DMatrix(data=test_sparse)
+
+#Building the first xgb models
+
+#Parameter tuning
+
+param <- list(booster="gbtree",
+              objective="binary:logistic",
+              eta = 0.01,
+             
+              gamma = 5,
+              max_depth =6,
+              lambda=0.1,
+              alpha=1,
+              min_child_weight = 1,
+              subsample = 0.9,
+              colsample_bytree = 0.9,
+              eval_metric="auc"
+              
+)
+
+
+
+
+
+
+#Model building
+
+model1 <- xgb.train(params = param,
+                   data = dtrain, 
+                   nround = 1000,
+                   maximize = TRUE,
+                   
+                   verbose=1)
+
+
+#Prediction part
+
+pred=predict(model1,dtest)
+
+#Building 2nd xgboost model
+
+
+param <- list(booster="gbtree",
+              objective="binary:logistic",
+              eta = 0.01,
+             
+              gamma = 5,
+              max_depth =8,
+              lambda=0.1,
+              alpha=1,
+              min_child_weight = 1,
+              subsample = 0.9,
+              colsample_bytree = 0.9,
+              eval_metric="auc"
+)
+
+
+
+model2 <- xgb.train(params = param,
+                   data = dtrain, 
+                   nround = 1000,
+                   maximize = TRUE,
+                   
+                   verbose=1)
+
+
+#Prediction part
+
+pred1=predict(model2,dtest)
+
+
+#Ensembling 2 xgb models
+
+p1<-as.data.frame(pred)
+p2<-as.data.frame(pred1)
+
+#Taking weighted average of 2 models
+
+p<-(p1$pred*0.8)+(p2$pred1*0.2)
+
+p<-as.data.frame(p)
+
+#Submission part
+p<-format(round(p,4),nsmall=4)
+
+
+s<-data.frame(ID=test$ID,p)
+
+setnames(s,"p","Approved")
+
+
+fwrite(s,"C:/Users/Sudipto Kumar/Desktop/HackerEarth/AV Mckinsey hack/sample67.csv",row.names=F)
+#Public lb score=0.85060;Private lb score=0.85460
+
+
