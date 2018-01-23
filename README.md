@@ -2,7 +2,8 @@
 This respository is about Mckinsey online hack conducted on Analytics Vidhya on January 20th-21st,2018
 
 
-Problem Statement
+
+**Problem Statement**
 
 
 
@@ -15,7 +16,7 @@ They now want to identify the leads' segments having a higher conversion ratio (
 
 
 
-Evaluation Criteria
+**Evaluation Criteria**
 
 
 The Evaluation Criteria for this problem is AUC_ROC .
